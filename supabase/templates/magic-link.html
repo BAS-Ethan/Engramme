@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Connexion à Engramme</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#0f0e1a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0e1a;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background-color:#1a1932;border:1px solid #2e2d52;border-radius:24px;">
+            <tr>
+              <td align="center" style="padding:40px 32px 8px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+                <div style="font-size:32px;line-height:1;color:#818cf8;">&#9673;</div>
+                <h1 style="margin:16px 0 0 0;font-size:24px;font-weight:600;color:#f1f5f9;">Engramme</h1>
+                <p style="margin:8px 0 0 0;font-size:15px;line-height:1.5;color:#a5b4fc;">Ton second cerveau</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:24px 32px 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+                <p style="margin:0;font-size:16px;line-height:1.6;color:#cbd5e1;">
+                  Clique sur le bouton pour te connecter.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:24px 32px 0 32px;">
+                <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 32px;background-color:#6366f1;border-radius:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;">
+                  Me connecter
+                </a>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:32px 32px 0 32px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="border-top:1px solid #2e2d52;font-size:0;line-height:0;">&nbsp;</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:24px 32px 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+                <p style="margin:0;font-size:14px;line-height:1.6;color:#94a3b8;">
+                  Dans l'appli installée sur ton écran d'accueil, saisis plutôt ce code :
+                </p>
+                <p style="margin:16px 0 0 0;padding:16px 24px;display:inline-block;background-color:#0f0e1a;border:1px solid #2e2d52;border-radius:16px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:32px;font-weight:600;letter-spacing:8px;color:#e0e7ff;">
+                  {{ .Token }}
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:32px 32px 40px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+                <p style="margin:0;font-size:12px;line-height:1.6;color:#64748b;">
+                  Ce lien et ce code expirent bientôt et ne servent qu'une fois.<br />
+                  Si tu n'as pas demandé cet email, tu peux l'ignorer.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
