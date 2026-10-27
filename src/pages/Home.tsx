@@ -11,22 +11,31 @@ export default function Home() {
   const { session } = useAuth()
   const [notes, setNotes] = useState<NoteListItem[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     let cancelled = false
-    supabase
-      .from('notes')
-      .select('id, title, updated_at')
-      .order('updated_at', { ascending: false })
-      .then(({ data, error }) => {
+    const timer = setTimeout(() => {
+      const search = query.trim()
+      let request = supabase
+        .from('notes')
+        .select('id, title, updated_at')
+        .order('updated_at', { ascending: false })
+      if (search) request = request.textSearch('fts', search, { type: 'websearch', config: 'french' })
+      request.then(({ data, error }) => {
         if (cancelled) return
         if (error) setError(error.message)
-        else setNotes(data)
+        else {
+          setError(null)
+          setNotes(data)
+        }
       })
+    }, 250)
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
-  }, [])
+  }, [query])
 
   return (
     <div className="relative min-h-dvh overflow-hidden">
@@ -47,6 +56,15 @@ export default function Home() {
             </Link>
           </div>
 
+          <input
+            type="search"
+            aria-label="Rechercher dans les notes"
+            placeholder="Rechercher…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="mt-3 min-h-11 w-full rounded-2xl border border-white/40 bg-white/70 px-4 text-base text-slate-900 outline-none focus:border-accent dark:border-white/20 dark:bg-white/10 dark:text-slate-100"
+          />
+
           {error && (
             <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">
               {error}
@@ -57,7 +75,7 @@ export default function Home() {
           )}
           {notes?.length === 0 && (
             <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-              Aucune note pour l'instant.
+              {query.trim() ? 'Aucun résultat.' : "Aucune note pour l'instant."}
             </p>
           )}
           {notes && notes.length > 0 && (

@@ -178,7 +178,7 @@ npm run preview    # tester le build (utile pour la PWA)
 
 - [x] 1. Squelette du projet
 - [x] 2. Auth
-- [ ] 3. CRUD de notes
+- [x] 3. CRUD de notes
 - [ ] 4. Recherche
 - [ ] 5. Tags et liens entre notes
 - [ ] 6. Mode hors-ligne

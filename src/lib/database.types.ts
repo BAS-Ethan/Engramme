@@ -10,6 +10,7 @@ export interface Database {
           tags: string[]
           created_at: string
           updated_at: string
+          fts: string
         }
         Insert: {
           id?: string
@@ -19,6 +20,7 @@ export interface Database {
           tags?: string[]
           created_at?: string
           updated_at?: string
+          fts?: never
         }
         Update: {
           id?: string
@@ -28,6 +30,7 @@ export interface Database {
           tags?: string[]
           created_at?: string
           updated_at?: string
+          fts?: never
         }
         Relationships: []
       }
