@@ -1,0 +1,26 @@
+{
+  "brand": "Engramme",
+  "tagline": "Ton second cerveau",
+  "brief": "Application de second cerveau (notes, recherche, assistant IA) en PWA, au design verre et bento : douce, aérée, un peu poétique.",
+  "adjectives": ["doux", "poétique", "clair", "mémoire"],
+  "criteria": "Lisible à 16 px, fonctionne en une couleur, cohérent avec l'interface en verre sombre, et évoque la trace d'un souvenir.",
+  "industry": "consumer-app",
+  "nav": ["Notes", "Assistant", "Projets"],
+  "brand_color": "#fed766",
+  "tile_color": "#1c1c1f",
+  "greyscale": false,
+  "designer": "Engramme",
+  "round": 1,
+  "concepts": [{
+    "name": "Sillon",
+    "symbol": "engramme-symbol.svg",
+    "lockup": "engramme-horizontal.svg",
+    "symbol_on_tile": "engramme-symbol-dark.svg",
+    "symbol_on_dark": "engramme-symbol-dark.svg",
+    "lockup_on_dark": "engramme-horizontal-dark.svg",
+    "idea": "Un fil unique qui serpente en trois boucles dessine l'extérieur d'un E, comme les sillons du cortex, et part d'un point : la trace du souvenir.",
+    "rationale": ["Le E rappelle le nom sans lettre figée", "Un seul fil continu : le lien entre les notes", "Point moutarde repris de la palette de l'appli"]
+  }],
+  "recommendation": "Sillon : un seul concept validé avec vous.",
+  "next_steps": ["Remplacer les icônes de public/", "Intégrer le logo dans la barre de navigation et l'écran de connexion", "Valider la version petite taille sur iPhone"]
+}

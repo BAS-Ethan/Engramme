@@ -4,34 +4,62 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark light" />
+    <meta name="supported-color-schemes" content="dark light" />
     <title>Connexion à Engramme</title>
+    <style>
+      /* Les e-mails ne lisent pas theme.css : les couleurs sont recopiées ici (palette de src/theme.css).
+         Sombre par défaut (styles en ligne) ; mode clair pour les clients qui suivent prefers-color-scheme. */
+      @media (prefers-color-scheme: light) {
+        .page { background-color: #f4f4f8 !important; }
+        .ambient { background-image: radial-gradient(circle at 12% 0%, rgba(254,215,102,0.55), rgba(254,215,102,0) 46%), radial-gradient(circle at 92% 100%, rgba(255,74,28,0.28), rgba(255,74,28,0) 46%) !important; }
+        .glass { background-color: rgba(255,255,255,0.6) !important; border-color: rgba(255,255,255,0.9) !important; box-shadow: 0 8px 32px rgba(86,86,86,0.18), inset 0 1px 0 rgba(255,255,255,0.95) !important; }
+        .fg { color: #2b2b2e !important; }
+        .muted { color: #565656 !important; }
+        .divider { border-top-color: rgba(86,86,86,0.18) !important; }
+        .field { background-color: rgba(255,255,255,0.7) !important; border-color: rgba(255,255,255,0.9) !important; }
+      }
+    </style>
   </head>
-  <body style="margin:0;padding:0;background-color:#0f0e1a;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0e1a;">
+  <body class="page" style="margin:0;padding:0;background-color:#1c1c1f;">
+    <!-- Texte d'aperçu dans la liste des mails -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+      Ton lien de connexion à Engramme, et ton code à 6 chiffres.
+    </div>
+
+    <!-- Fond : deux grandes taches (moutarde et flamme) comme dans l'appli, derrière le verre -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="page" style="background-color:#1c1c1f;">
       <tr>
-        <td align="center" style="padding:40px 16px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background-color:#1a1932;border:1px solid #2e2d52;border-radius:24px;">
+        <td align="center" class="ambient" style="padding:40px 16px;background-color:#1c1c1f;background-image:radial-gradient(circle at 12% 0%, rgba(254,215,102,0.38), rgba(254,215,102,0) 46%), radial-gradient(circle at 92% 100%, rgba(255,74,28,0.32), rgba(255,74,28,0) 46%);">
+
+          <!-- Carte en verre : fond translucide, reflet, bordure lumineuse, coins 24 px -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="glass" style="max-width:480px;background-color:rgba(244,244,248,0.08);background-image:linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0) 55%);border:1px solid rgba(244,244,248,0.24);border-radius:24px;box-shadow:0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25);">
             <tr>
               <td align="center" style="padding:40px 32px 8px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-                <div style="font-size:32px;line-height:1;color:#818cf8;">&#9673;</div>
-                <h1 style="margin:16px 0 0 0;font-size:24px;font-weight:600;color:#f1f5f9;">Engramme</h1>
-                <p style="margin:8px 0 0 0;font-size:15px;line-height:1.5;color:#a5b4fc;">Ton second cerveau</p>
+                <img src="{{ .SiteURL }}/icon-192.png" width="64" height="64" alt="Engramme" style="display:block;margin:0 auto;width:64px;height:64px;border:0;border-radius:18px;" />
+                <h1 class="fg" style="margin:16px 0 0 0;font-size:26px;font-weight:600;color:#f4f4f8;">Engramme</h1>
+                <p class="muted" style="margin:6px 0 0 0;font-size:15px;line-height:1.5;color:#e6e6ea;">Ton second cerveau</p>
               </td>
             </tr>
 
             <tr>
               <td align="center" style="padding:24px 32px 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-                <p style="margin:0;font-size:16px;line-height:1.6;color:#cbd5e1;">
+                <p class="fg" style="margin:0;font-size:16px;line-height:1.6;color:#f4f4f8;">
                   Clique sur le bouton pour te connecter.
                 </p>
               </td>
             </tr>
 
+            <!-- Bouton : même style que les boutons d'accent de l'appli (moutarde, texte charbon, coins 16 px).
+                 Tableau imbriqué : c'est la méthode qui centre le plus fiablement dans tous les clients mail. -->
             <tr>
               <td align="center" style="padding:24px 32px 0 32px;">
-                <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 32px;background-color:#6366f1;border-radius:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;">
-                  Me connecter
-                </a>
+                <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                  <tr>
+                    <td align="center" bgcolor="#fed766" style="background-color:#fed766;border-radius:16px;">
+                      <a href="{{ .ConfirmationURL }}" style="display:block;padding:14px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;line-height:20px;text-align:center;color:#2b2b2e;text-decoration:none;">Me connecter</a>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
 
@@ -39,7 +67,7 @@
               <td style="padding:32px 32px 0 32px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td style="border-top:1px solid #2e2d52;font-size:0;line-height:0;">&nbsp;</td>
+                    <td class="divider" style="border-top:1px solid rgba(244,244,248,0.14);font-size:0;line-height:0;">&nbsp;</td>
                   </tr>
                 </table>
               </td>
@@ -47,24 +75,28 @@
 
             <tr>
               <td align="center" style="padding:24px 32px 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-                <p style="margin:0;font-size:14px;line-height:1.6;color:#94a3b8;">
+                <p class="muted" style="margin:0;font-size:14px;line-height:1.6;color:#e6e6ea;">
                   Dans l'appli installée sur ton écran d'accueil, saisis plutôt ce code :
                 </p>
-                <p style="margin:16px 0 0 0;padding:16px 24px;display:inline-block;background-color:#0f0e1a;border:1px solid #2e2d52;border-radius:16px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:32px;font-weight:600;letter-spacing:8px;color:#e0e7ff;">
-                  {{ .Token }}
-                </p>
+                <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:16px auto 0 auto;">
+                  <tr>
+                    <!-- padding-left de 8 px en plus : l'espacement des lettres ajoute 8 px après le dernier chiffre -->
+                    <td align="center" class="field fg" style="padding:16px 24px 16px 32px;background-color:rgba(244,244,248,0.1);border:1px solid rgba(244,244,248,0.24);border-radius:16px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:32px;font-weight:600;letter-spacing:8px;color:#f4f4f8;">{{ .Token }}</td>
+                  </tr>
+                </table>
               </td>
             </tr>
 
             <tr>
               <td align="center" style="padding:32px 32px 40px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-                <p style="margin:0;font-size:12px;line-height:1.6;color:#64748b;">
+                <p class="muted" style="margin:0;font-size:12px;line-height:1.6;color:#e6e6ea;opacity:0.7;">
                   Ce lien et ce code expirent bientôt et ne servent qu'une fois.<br />
                   Si tu n'as pas demandé cet email, tu peux l'ignorer.
                 </p>
               </td>
             </tr>
           </table>
+
         </td>
       </tr>
     </table>
