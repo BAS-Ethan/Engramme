@@ -1,19 +1,55 @@
 @import 'tailwindcss';
+@import './theme.css';
 
-@theme {
+/* Les valeurs viennent de theme.css ; `inline` garde les var() vivantes (clair / sombre). */
+@theme inline {
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  --color-ink: #0f0e1a;
-  --color-accent: #818cf8;
-  --color-accent-strong: #6366f1;
+  --color-page: var(--page);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
+  --color-field: var(--glass-field);
+  --color-divider: var(--glass-divider);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-danger: var(--danger);
+  --color-danger-border: var(--danger-border);
+  --color-blob-a: var(--blob-a);
+  --color-blob-b: var(--blob-b);
+  --color-blob-c: var(--blob-c);
 
-  --radius-card: 1.5rem;
-  --blur-glass: 24px;
-  --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.25);
+  --radius-card: var(--glass-radius);
+  --blur-glass: var(--glass-blur);
+  --shadow-glass: var(--glass-shadow);
+
+  --animate-drift: drift 24s ease-in-out infinite;
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(8%, 10%, 0) scale(1.2);
+    }
+  }
 }
 
-:root {
-  color-scheme: light dark;
+/* Matière verre : flou + saturation du fond (les couleurs du fond ressortent à travers) + reflet en haut à gauche. */
+@utility glass-surface {
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  background-image: linear-gradient(135deg, var(--glass-sheen), transparent 55%);
+}
+
+/* Zone qui défile sans afficher la barre de défilement. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 html,
@@ -23,13 +59,7 @@ body,
 }
 
 body {
-  @apply bg-slate-100 font-sans text-slate-900 antialiased;
+  @apply bg-page font-sans text-fg antialiased;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    @apply bg-ink text-slate-100;
-  }
 }

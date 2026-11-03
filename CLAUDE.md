@@ -34,6 +34,8 @@ Variables d'environnement côté frontend : `VITE_SUPABASE_URL`, `VITE_SUPABASE_
 
 ## Modèle de données (point de départ)
 
+> Ce schéma est le point de départ d'origine. Le schéma réel (beaucoup plus de tables) est décrit dans « Base de données (état actuel) » plus bas.
+
 Table `notes` :
 
 - `id` (uuid, PK)
@@ -174,16 +176,148 @@ npm run build      # build de production
 npm run preview    # tester le build (utile pour la PWA)
 ```
 
+## État réel de l'application (tour complet au 2026-11-03)
+
+Ce qui suit décrit le code **tel qu'il est**, pas la cible. En cas de conflit avec les sections de spécification ci-dessus, c'est ce qui est écrit ici qui décrit l'existant ; les sections ci-dessus décrivent l'intention.
+
+**Écarts notables avec la spécification d'origine :**
+- L'éditeur de notes est un simple `<textarea>` Markdown (`NoteEditor.tsx`), pas Tiptap/Milkdown.
+- La colonne `notes.tags` existe mais **aucune UI ne l'utilise** ; les liens `[[note]]` et les backlinks n'existent pas.
+- La recherche plein texte (`notes.fts`) est branchée sur la barre de recherche de l'accueil.
+- L'assistant IA (`/assistant`) est un **écran factice** (champ désactivé). Aucune Edge Function RAG, aucune extension `pgvector`, aucune table `note_chunks`.
+- Pas de mode hors-ligne : seul `vite-plugin-pwa` (manifest + service worker `generateSW`) est en place.
+- Pas de déploiement configuré (Cloudflare Pages / Vercel).
+- Il y a beaucoup de fonctionnalités **hors feuille de route initiale** : projets/dossiers/tâches/documents, calendrier ICS, fils directeurs, idées, tableau de bord, page Apparence.
+- Les types de base sont **écrits à la main** dans `src/lib/database.types.ts` (pas générés par `supabase gen types`).
+
+**Git :** tout le travail depuis le commit `f423d82` (recherche plein texte) est **non commité** (nombreux fichiers modifiés et non suivis). Les futurs agents doivent committer par petites étapes fonctionnelles (voir conventions).
+
+## Carte du code
+
+### Routes (`src/App.tsx`)
+
+Providers : `AppearanceProvider` > `AuthProvider` > `BrowserRouter`. Tout sauf `/login` est derrière `ProtectedRoute` puis `AppLayout` (barre de navigation + fond).
+
+| Route | Page | Rôle |
+|---|---|---|
+| `/login` | `Login.tsx` | Magic link **ou** code à 6 chiffres (`signInWithOtp` / `verifyOtp`), seule page centrée (`max-w-md`) |
+| `/` | `Home.tsx` | Tableau de bord bento : événements du jour (calendriers ICS), fil directeur du jour, notes (recherche FTS), tâches datées (cochables), compte |
+| `/assistant` | `Assistant.tsx` | Placeholder (RAG à venir) |
+| `/calendar` | `Calendar.tsx` | Calendrier mois + jour sélectionné en grille horaire (56 px/heure, scroll masqué) + détail d'événement ; gestion des sources ICS dans une modale |
+| `/projects` | `Projects.tsx` | Dossiers et projets ; création par modales ; projets sans dossier (carte « Sans dossier ») ; glisser-déposer d'un projet vers un dossier ; renommer/supprimer un dossier |
+| `/projects/:id` | `ProjectDetail.tsx` | Tâches (avec échéance via `DatePicker`), notes du projet, documents (Supabase Storage), changer de dossier (`Select`), supprimer |
+| `/principles` | `Principles.tsx` | « Fils directeurs » : liste numérotée dépliable (titre = `content`, + `description`), création en modale |
+| `/ideas` | `Ideas.tsx` | « Foire aux idées » : mur de cartes, statut (raw / dig / project / dropped, cycle au clic), tags (`#tag` dans le texte à la création), recherche et filtres côté client, création en modale |
+| `/notes/new`, `/notes/:id` | `NoteEditor.tsx` | Édition d'une note ; `?project=<id>` rattache la note à un projet |
+| `/appearance` | `Appearance.tsx` | Thème (système/clair/sombre), fond (réseau, aurore, points, étoiles, uni, image perso), couleurs d'accent (préréglages + personnalisées) |
+
+Ordre de la barre de navigation (`AppLayout.tsx`, tableau `links`) : Accueil, Assistant, Calendrier, Projets, Fils directeurs, Idées, puis Apparence et Déconnexion en bas. Sur mobile c'est une barre flottante en bas ; dès `md` c'est un rail vertical à gauche (`md:pl-24` sur le contenu). Avec 8 boutons, les items utilisent `flex-1 max-w-12` pour tenir sur ~375 px : en ajouter un nouveau demande de revérifier ce calcul (ou de regrouper Apparence/Déconnexion).
+
+### Composants partagés (`src/components/`)
+
+- `Card` : surface en verre (le bloc de base de toute mise en page bento). Ne pas dupliquer ses classes.
+- `Modal` : `<dialog>` natif (`showModal`), fermeture par Échap ou clic sur le fond, `overflow-visible` (les panneaux flottants y restent dans le `<dialog>`).
+- `Select` : menu déroulant maison (combobox/listbox accessible, clavier). **Remplace le `<select>` natif**, dont la liste système ne suit pas le thème.
+- `DatePicker` : sélecteur de date maison (valeur `YYYY-MM-DD` ou `''`). **Remplace `<input type="date">`**, pour la même raison.
+- `FloatingPanel` : panneau en verre rendu par **portail** (dans `document.body`, ou dans le `<dialog>` englobant), positionné en `fixed` sous son ancre, ferme au clic extérieur/Échap. Utilisé par `Select` et `DatePicker`. Voir « Pièges » pour la raison d'être.
+- `Logo` : symbole d'Engramme en SVG (fil `currentColor`, point `var(--accent)`, prop `small` pour le tracé épaissi). Utilisé sur `Login` et en haut du rail `md+`. Kit complet (SVG, icônes, guide) dans `design/logo/` ; les icônes PWA de `public/` en sont copiées. Le gabarit d'e-mail charge `{{ .SiteURL }}/icon-192.png` : le logo n'apparaît dans le mail que si l'URL du site est publique.
+- `Icon.tsx` : `Icon`, le dictionnaire `iconPaths` (tracés SVG, style Feather) et les classes de boutons-icônes `iconButtonClass` (neutre), `iconPrimaryClass` (accent), `iconOutlineClass` (bordure).
+- `AppLayout` (navigation + fond + `<Outlet/>`), `ProtectedRoute`, `Background` (+ `NeuralBackground` en three.js, `DotsBackground` et `StarsBackground` en canvas 2D).
+
+### Librairies (`src/lib/`)
+
+- `supabase.ts` : client typé `createClient<Database>`, lève une erreur si `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` manquent.
+- `auth.tsx` : `AuthProvider` / `useAuth()` (`session`, `loading`) via `onAuthStateChange`.
+- `database.types.ts` : interface `Database` écrite à la main + alias `Note`, `Folder`, `Project`, `Task`, `ProjectDocument`, `Principle`, `CalendarSource`, `Idea`, `IdeaStatus`. **À mettre à jour à la main à chaque migration.**
+- `calendar.ts` : `parseIcs(sourceId, text, from, to)` (ical.js : récurrences, exceptions `RECURRENCE-ID`, VTIMEZONE, événements annulés ignorés, plafond 20 000 occurrences) et `fetchFeed(sourceId)` (appelle l'Edge Function `fetch-calendar`). Type `CalendarEvent`.
+- `dates.ts` : `localDateString()` (YYYY-MM-DD **local**, jamais `toISOString()` qui décale selon le fuseau) et `formatDueDate()`.
+- `storage.ts` : bucket `project-documents`, `removeProjectFiles()` (la suppression SQL en cascade ne supprime pas les fichiers Storage : il faut les retirer avant).
+- `appearance.tsx` : thème, fond, couleurs, image de fond, persistés dans `localStorage` (clés `engramme.theme`, `engramme.background`, `engramme.backgroundImage`, `engramme.colors`). Le `localStorage` y est un simple confort (try/catch partout) ; `index.html` applique thème et couleurs avant le premier rendu pour éviter le flash.
+
+### Base de données (état actuel)
+
+Toutes les tables ont le RLS activé avec 4 politiques (select/insert/update/delete) `user_id = auth.uid()` ; `user_id` a `default auth.uid()` (on ne l'envoie pas côté client).
+
+| Table | Colonnes utiles |
+|---|---|
+| `notes` | `title`, `content`, `tags text[]` (inutilisé en UI), `project_id` (nullable, `on delete set null`), `fts` (tsvector généré, config `french`, index GIN), `updated_at` (trigger) |
+| `folders` | `name` |
+| `projects` | `folder_id` (**nullable** : projet sans dossier), `name`, `updated_at` (trigger) |
+| `tasks` | `project_id`, `title`, `done`, `due_date date` (nullable) |
+| `project_documents` | `project_id`, `name`, `storage_path`, `size` ; fichiers dans le bucket privé `project-documents`, chemin `<user_id>/<project_id>/<fichier>`, limite 20 Mo |
+| `principles` | `content` (= titre du fil directeur), `description` |
+| `calendar_sources` | `name`, `url` (lien ICS secret, `https` ou `webcal`), `color` |
+| `ideas` | `content`, `status` (check : `raw`/`dig`/`project`/`dropped`), `tags text[]`, `updated_at` (trigger) |
+
+Fonction `public.set_updated_at()` partagée par les triggers. Migrations dans `supabase/migrations/`, dans cet ordre : `create_notes`, `notes_full_text_search`, `projects` (folders + projects + tasks + documents + bucket), `principles`, `projects_optional_folder`, `calendar_sources`, `tasks_due_date`, `principles_description`, `ideas`.
+
+**Il n'y a pas de `supabase/config.toml` ni de `.env.example` dans le dépôt** (alors que la spécification demande un `.env.example`). Le gabarit d'e-mail `supabase/templates/magic-link.html` est à coller côté Supabase.
+
+### Edge Functions (`supabase/functions/`)
+
+- `fetch-calendar` : reçoit `{ source_id }` + le JWT de l'utilisateur, lit l'URL dans `calendar_sources` **via RLS**, télécharge le flux ICS côté serveur (le navigateur est bloqué par CORS) et le renvoie en `text/plain`. Garde-fous : https seulement, résolution DNS et rejet des IP privées (SSRF) à chaque redirection (3 max), délai 10 s, taille max 5 Mo. **Non testée en conditions réelles** (écrite et typée, pas exécutée ni déployée depuis cet environnement).
+- L'Edge Function `index-note` / `ask` du RAG n'existe pas encore.
+
+### Mise en route et déploiement manuel
+
+À faire par l'utilisateur (ces commandes ne sont pas automatisées ; l'état de la base distante n'est pas vérifiable depuis le code) :
+
+```bash
+supabase db push                          # appliquer les migrations en attente
+supabase functions deploy fetch-calendar  # sinon calendrier et accueil affichent une erreur
+```
+
+Si une page affiche une erreur Supabase du type « relation does not exist » ou « column ... does not exist », une migration n'a pas été appliquée.
+
+## Conventions de code observées (à suivre)
+
+- **Chargement de données** : `useEffect` avec drapeau `cancelled`, appels `supabase.from(...)` directs dans la page (pas de couche de service ni de React Query), état local, mise à jour de l'état **après** succès serveur, erreurs dans un état `error` affiché dans un `<p role="alert" className="text-sm text-danger">`.
+- **Pages** : `<main className="p-4 ...">` **pleine largeur** (pas de `max-w` ni de `mx-auto`, choix explicite de l'utilisateur ; seule `Login` est centrée), cartes dans une grille bento.
+- **Boutons d'action = icônes** (poubelle, crayon, plus, coche, croix…), toujours avec `aria-label` **et** `title`, via `Icon` + `iconButtonClass` / `iconPrimaryClass` / `iconOutlineClass`. Exceptions assumées : les boutons texte **Annuler / Créer / Enregistrer** à l'intérieur des modales, et quelques liens de navigation (« ← Projets »). Ajouter un nouveau tracé dans `iconPaths` plutôt que du SVG inline.
+- **Création d'éléments** (dossier, projet, fil directeur, idée, calendrier) : un bouton « + » ouvre une `Modal` ; on n'utilise pas de formulaire d'ajout intégré à la carte.
+- **Verre** : l'utilitaire Tailwind `glass-surface` (défini dans `src/index.css` : flou + saturation + reflet) avec les jetons de `src/theme.css` (`--glass`, `--glass-border`, `--glass-sheen`, `--glass-shadow`, `--glass-blur`, `--glass-saturate`). `theme.css` est le **seul** endroit où les couleurs sont définies ; Tailwind les expose via `@theme inline` (`bg-glass`, `text-muted`, `bg-field`, `text-accent-text`, `text-danger`, `rounded-card`, `shadow-glass`…). Ne pas coder de couleur en dur, sauf les couleurs de calendrier choisies par l'utilisateur.
+- **Mobile** : cibles tactiles ≥ 44 px (`min-h-11`, `size-11`), safe areas iOS déjà gérées dans `body` et la barre de navigation.
+- **Texte** : interface et commentaires en **français**, identifiants et commits en **anglais**. TypeScript strict, pas de `any`. Aucun linter ni test automatisé n'est configuré : la vérification disponible est `npm run build` (`tsc -b` + `vite build`).
+- **Dette connue** : les constantes `inputClass` / `buttonClass` sont **recopiées** dans plusieurs pages (7 occurrences de `inputClass`) ; les extraire dans un composant `Field`/`Input` partagé serait un refactor légitime mais n'a pas été fait.
+
+### Ajouter une table ou une fonctionnalité (check-list)
+
+1. Migration SQL dans `supabase/migrations/` avec horodatage croissant : table, `user_id ... default auth.uid() references auth.users on delete cascade`, index sur `user_id`, **RLS + 4 politiques**, trigger `set_updated_at` si `updated_at`.
+2. Ajouter la table dans `Database` (`Row`/`Insert`/`Update`) **et** un alias exporté en bas de `database.types.ts`.
+3. Page dans `src/pages/`, route dans `App.tsx`, entrée dans `links` de `AppLayout.tsx` si elle mérite un accès direct (attention à la largeur de la barre mobile).
+4. `npm run build` doit passer. Dire à l'utilisateur de lancer `supabase db push`.
+5. Mettre à jour cette section et la check-list d'avancement ci-dessous.
+
+## Pièges connus (déjà rencontrés)
+
+- **Surfaces en verre imbriquées** : un élément avec `backdrop-filter` crée un contexte d'empilement et une « racine de fond » : un menu `absolute` à l'intérieur d'une `Card` passe **sous** les cartes suivantes, et son propre flou ne voit pas le reste de la page. D'où `FloatingPanel` (portail). Tout nouveau menu/popover doit l'utiliser. (`ProjectDetail` donne aussi `relative z-20` à sa carte d'en-tête.)
+- **Dans un `<dialog>` à fond flouté**, `position: fixed` se repère par rapport à la modale, pas à l'écran (compensé dans `FloatingPanel`).
+- **Échap dans une modale** ferme la modale : un panneau interne doit intercepter la touche en phase de capture (`preventDefault` + `stopPropagation`).
+- **Dates** : toujours `localDateString()` ; les colonnes `date` sont comparées comme chaînes `YYYY-MM-DD`.
+- **Glisser-déposer HTML5** (projets vers dossiers) est peu fiable sur iPhone : le sélecteur « Dossier » de la page projet en est l'alternative fiable, ne pas le retirer.
+- **Accueil** : chaque visite appelle l'Edge Function une fois par source de calendrier. Si le nombre de sources grandit, prévoir un cache.
+- **Liens ICS** : ce sont des secrets stockés en clair en base (protégés par RLS). Ne jamais les logguer ni les afficher.
+- **Inscriptions** : tant que « Allow new users to sign up » est actif côté Supabase (réglage par défaut), n'importe qui peut créer un compte avec un magic link. Le RLS l'empêche de voir les données d'autrui, mais il pourrait consommer le quota gratuit et utiliser `fetch-calendar` comme relais. Pour un usage personnel, désactiver les inscriptions dans le dashboard (le client ne peut pas le garantir : la clé anon est publique) et inviter les comptes voulus depuis Authentication → Users.
+- Le calendrier est en **lecture seule** (abonnement ICS). Écrire dans Google/Microsoft demanderait OAuth et des projets cloud côté fournisseur : non fait.
+
+## Idées et suite possible (non engagé)
+
+Pistes évoquées avec l'utilisateur, par ordre de valeur perçue : tâches datées affichées dans le calendrier ; capture rapide (bouton « + » global, Web Share Target, raccourcis écran d'accueil) ; couleurs de cartes, épinglage, « En faire un projet » et idée au hasard sur l'accueil pour les idées ; description du fil directeur du jour sur l'accueil ; journal quotidien et revue hebdomadaire ; export Markdown/ZIP ; ping planifié contre la mise en pause du free tier Supabase ; puis les étapes 5 à 9 de la feuille de route (tags et `[[liens]]`, hors-ligne, déploiement, RAG).
+
 ## État d'avancement
+
+Étapes de la feuille de route :
 
 - [x] 1. Squelette du projet
 - [x] 2. Auth
 - [x] 3. CRUD de notes
-- [ ] 4. Recherche
-- [ ] 5. Tags et liens entre notes
+- [x] 4. Recherche (plein texte sur l'accueil)
+- [ ] 5. Tags et liens entre notes (colonne `tags` présente, pas d'UI ; ni `[[liens]]` ni backlinks)
 - [ ] 6. Mode hors-ligne
-- [ ] 7. Déploiement
+- [ ] 7. Déploiement (à faire tôt si possible pour tester la PWA sur iPhone)
 - [ ] 8. RAG : indexation
-- [ ] 9. RAG : assistant question / réponse
+- [ ] 9. RAG : assistant question / réponse (écran factice seulement)
+
+Fonctionnalités ajoutées hors feuille de route : projets / dossiers / tâches datées / documents, calendrier ICS (+ Edge Function `fetch-calendar`), fils directeurs, idées, tableau de bord d'accueil, page Apparence (thèmes, fonds, couleurs), système de composants (`Modal`, `Select`, `DatePicker`, `FloatingPanel`, `Icon`).
 
 *(Mettre à jour cette liste à la fin de chaque étape.)*

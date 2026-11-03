@@ -1,0 +1,81 @@
+/*
+ * Engramme : pilier de la direction artistique.
+ * Seul endroit où les couleurs sont définies. Tout le reste (Tailwind, composants,
+ * manifest, e-mails) en dérive. Pour changer l'ambiance, modifier ce fichier.
+ */
+
+/* 1. Palette brute */
+:root {
+  --alabaster-grey: #e6e6eaff;
+  --ghost-white: #f4f4f8ff;
+  --mustard: #fed766ff;
+  --charcoal: #565656ff;
+  --blazing-flame: #ff4a1cff;
+
+  /* Teintes dérivées */
+  --charcoal-deep: #1c1c1fff; /* fond sombre */
+  --charcoal-ink: #2b2b2eff; /* texte en mode clair */
+  --flame-deep: #c9330fff; /* flame lisible comme texte sur fond clair (contraste > 4.5) */
+  --flame-soft: #ff7a57ff; /* flame lisible comme texte sur fond sombre */
+
+  /* Les deux couleurs d'accent. Modifiables depuis la page Apparence (surchargées sur <html>). */
+  --brand-1: var(--mustard);
+  --brand-2: var(--blazing-flame);
+}
+
+/* 2. Tokens sémantiques — clair */
+:root {
+  --page: var(--ghost-white);
+  --fg: var(--charcoal-ink);
+  --fg-muted: var(--charcoal);
+
+  --glass: rgb(255 255 255 / 0.42);
+  --glass-sheen: rgb(255 255 255 / 0.55);
+  --glass-border: rgb(255 255 255 / 0.85);
+  --glass-field: rgb(255 255 255 / 0.7);
+  --glass-divider: rgb(86 86 86 / 0.18);
+  --glass-shadow: 0 8px 32px rgb(86 86 86 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.95);
+
+  --accent: var(--brand-1);
+  --on-accent: var(--charcoal-ink);
+  --accent-text: color-mix(in srgb, var(--brand-2) 70%, black); /* lisible sur fond clair */
+  --danger: var(--flame-deep);
+  --danger-border: rgb(201 51 15 / 0.5);
+
+  --blob-a: var(--brand-1);
+  --blob-b: var(--brand-2);
+  --blob-c: var(--alabaster-grey);
+
+  color-scheme: light;
+}
+
+/* 3. Tokens sémantiques — sombre (priorité). data-theme est posé sur <html> par le contexte d'apparence (et par le script de index.html avant le premier rendu). */
+:root[data-theme='dark'] {
+  --page: var(--charcoal-deep);
+  --fg: var(--ghost-white);
+  --fg-muted: var(--alabaster-grey);
+
+  --glass: rgb(244 244 248 / 0.06);
+  --glass-sheen: rgb(255 255 255 / 0.14);
+  --glass-border: rgb(244 244 248 / 0.24);
+  --glass-field: rgb(244 244 248 / 0.1);
+  --glass-divider: rgb(244 244 248 / 0.14);
+  --glass-shadow: 0 8px 32px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.25);
+
+  --accent-text: var(--brand-1);
+  --danger: var(--flame-soft);
+  --danger-border: rgb(255 122 87 / 0.5);
+
+  --blob-a: var(--brand-2);
+  --blob-b: var(--brand-1);
+  --blob-c: var(--charcoal);
+
+  color-scheme: dark;
+}
+
+/* 4. Matière */
+:root {
+  --glass-radius: 1.5rem;
+  --glass-blur: 28px;
+  --glass-saturate: 180%;
+}

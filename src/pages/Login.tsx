@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Card } from '../components/Card'
+import { Logo } from '../components/Logo'
+import { Background } from '../components/Background'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 
 const inputClass =
-  'min-h-11 w-full rounded-2xl border border-white/40 bg-white/70 px-4 text-base text-slate-900 outline-none focus:border-accent dark:border-white/20 dark:bg-white/10 dark:text-slate-100'
+  'min-h-11 w-full rounded-2xl border border-glass-border bg-field px-4 text-base text-fg outline-none placeholder:text-muted/70 focus:border-accent-text'
 const buttonClass =
-  'min-h-11 w-full rounded-2xl bg-accent-strong px-4 font-medium text-white transition active:scale-[0.98] disabled:opacity-50'
+  'min-h-11 w-full rounded-2xl bg-accent px-4 font-medium text-on-accent transition active:scale-[0.98] disabled:opacity-50'
 
 export default function Login() {
   const { session } = useAuth()
@@ -43,12 +45,14 @@ export default function Login() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md items-center p-4">
+      <Background />
       <Card className="w-full">
-        <h1 className="text-2xl font-semibold">Engramme</h1>
+        <Logo className="size-16" />
+        <h1 className="mt-2 text-2xl font-semibold">Engramme</h1>
 
         {!sent ? (
           <form onSubmit={sendLink} className="mt-4 space-y-3">
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <p className="text-sm text-muted">
               Entre ton email : tu recevras un lien de connexion et un code à 6 chiffres.
             </p>
             <input
@@ -66,7 +70,7 @@ export default function Login() {
           </form>
         ) : (
           <form onSubmit={verifyCode} className="mt-4 space-y-3">
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <p className="text-sm text-muted">
               Email envoyé à {email}. Clique sur le lien, ou saisis ici le code à 6 chiffres
               (utile dans l'appli installée sur l'écran d'accueil).
             </p>
@@ -91,7 +95,7 @@ export default function Login() {
                 setCode('')
                 setError(null)
               }}
-              className="min-h-11 w-full text-sm text-slate-600 dark:text-slate-300"
+              className="min-h-11 w-full text-sm text-muted"
             >
               Changer d'email
             </button>
@@ -99,7 +103,7 @@ export default function Login() {
         )}
 
         {error && (
-          <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">
+          <p role="alert" className="mt-3 text-sm text-danger">
             {error}
           </p>
         )}
