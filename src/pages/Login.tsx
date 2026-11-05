@@ -53,7 +53,7 @@ export default function Login() {
         {!sent ? (
           <form onSubmit={sendLink} className="mt-4 space-y-3">
             <p className="text-sm text-muted">
-              Entre ton email : tu recevras un lien de connexion et un code à 6 chiffres.
+              Entre ton email : tu recevras un lien de connexion et un code à 8 chiffres.
             </p>
             <input
               type="email"
@@ -71,21 +71,21 @@ export default function Login() {
         ) : (
           <form onSubmit={verifyCode} className="mt-4 space-y-3">
             <p className="text-sm text-muted">
-              Email envoyé à {email}. Clique sur le lien, ou saisis ici le code à 6 chiffres
+              Email envoyé à {email}. Clique sur le lien, ou saisis ici le code à 8 chiffres
               (utile dans l'appli installée sur l'écran d'accueil).
             </p>
             <input
               inputMode="numeric"
               autoComplete="one-time-code"
-              pattern="[0-9]{6}"
-              maxLength={6}
+              pattern="[0-9]{8}"
+              maxLength={8}
               required
-              placeholder="123456"
+              placeholder="12345678"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
               className={`${inputClass} text-center tracking-[0.5em]`}
             />
-            <button type="submit" disabled={busy || code.length !== 6} className={buttonClass}>
+            <button type="submit" disabled={busy || code.length !== 8} className={buttonClass}>
               {busy ? 'Vérification…' : 'Valider le code'}
             </button>
             <button
